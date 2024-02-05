@@ -97,3 +97,29 @@ def update_place(place_id):
         storage.save()
         return jsonify(place.to_dict()), 200
     abort(404)
+
+
+@app_views.route("/places_search", methods=['POST'],
+                 strict_slashes=False)
+def search():
+    """
+    Searches for places/cities/amenenities
+    """
+    data = request.get_json(silent=True)
+    if not data:
+        abort(400, "Not a JSON")
+    states = data.get("states", [])
+    cities = data.get("cities", [])
+    amenities = data.get("amenities", [])
+    count = len(states) + len(cities) + len(amenities)
+
+    if (count == 0):
+        places = storage.all("Place")
+        places_list = [place.to_dict() for place in places.values()]
+        return jsonify(places_list), 200
+    
+    places_in_storage = storage.all("Places")
+    if (len(states)):
+        states_list = [storage.get("State", state) for state in states] 
+        cities_list = [state.cities for state in states_list]
+
